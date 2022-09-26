@@ -3,3 +3,69 @@ header {
     font-size: 100px;
     /* height: 50%; */
 }
+nav{
+    margin-top: 1%;
+    /* display: flex; */
+    /* justify-content: space-between; */
+    width:100%;
+    /* flex-direction: column-reverse; */
+    /* border: 1px solid black; */
+    /* display: none; */
+}
+#app{
+    margin-top: 1rem;
+}
+.search-bar {
+    /* color:rebeccapurple; */
+    margin-left: auto;
+    margin-top: 1rem;
+    /* display: inline; */
+}
+.boxes{
+    display: flex;
+    flex-wrap:wrap; 
+}
+.main_card{
+    flex-basis: 3;
+    width: 33%;
+}
+h5{
+    max-width: 80%;
+}
+/* .thumb{
+    position: absolute;
+    margin-left:80%;
+} */
+.dropdown{
+    display: flex;
+    justify-content: space-between;
+}
+.form-switch{
+    position:absolute;
+    left: 80%;
+    top: 15px;
+}
+/* .last{
+    flex:1
+} */
+@media only screen and (max-width: 767.9px) {
+    .search-bar {
+      margin-left: 0;
+    }
+    .main_card {
+        width: 50%;
+        /* margin-left: 3%; */
+      }
+    
+  }
+
+  @media only screen and (max-width: 576px) {
+    nav {
+      max-width: 530px;
+    }
+    .main_card {
+        width: 94%;
+        margin-left: 3%;
+      }
+  }
+
