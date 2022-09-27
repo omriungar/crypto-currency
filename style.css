@@ -40,15 +40,18 @@ h5{
     display: flex;
     justify-content: space-between;
 }
-.pop{
+.modal-body{
     display: flex;
-    justify-content: space-between;
+    justify-content:space-around;
+    align-items: center;
     flex-wrap: wrap;
-    width: 10rem;
-    background-color: red;
+    font-size: larger;
+    font-weight: bold;
+    /* background-color: red; */
 }
 .innerpop{
-    flex-basis: 50%;
+    flex-basis: 35%;
+    /* text-align: center; */
 }
 .main_switch{
     position:absolute;
