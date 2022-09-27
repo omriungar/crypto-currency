@@ -40,7 +40,17 @@ h5{
     display: flex;
     justify-content: space-between;
 }
-.form-switch{
+.pop{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 10rem;
+    background-color: red;
+}
+.innerpop{
+    flex-basis: 50%;
+}
+.main_switch{
     position:absolute;
     left: 80%;
     top: 15px;
