@@ -18,7 +18,7 @@ nav{
 .search-bar {
     /* color:rebeccapurple; */
     margin-left: auto;
-    margin-top: 1rem;
+    /* margin-top: 1rem; */
     /* display: inline; */
 }
 .boxes{
@@ -39,6 +39,13 @@ h5{
 .dropdown{
     display: flex;
     justify-content: space-between;
+}
+/* .form-control{
+    display: inline;
+} */
+#filter{
+    margin-left: 2rem;
+    margin-right: 1rem;
 }
 .modal-body{
     display: flex;
