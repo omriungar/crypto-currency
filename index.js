@@ -4,22 +4,33 @@ let more_info = {};
 let report_list = [];
 let report_list_id = [];
 let sixth_coin;
-let inter;
+let update_chart;
+;
 let my_search = document.getElementById('search_input');
-// let nav_toggle = document.querySelector('.navbar-toggler');
 
-// Execute a function when the user presses a key on the keyboard
+function my_loader(){
+    return `<div class="my_coin_loader"></br><img src="/assets/${Math.floor(Math.random()*5+1)}.gif" height="100px" alt=""></div>`;
+}
 
-
-
-
+async function get_data(endp){
+    try {
+        let api = await fetch (`https://api.coingecko.com/api/v3/coins/${endp}`);
+        return await api.json();
+    } catch (error) {
+        return alert('Error loading data. Please try again, or contact support.')
+    }
+   
+}
 
 (async () => {
-    app.innerHTML = `<div class="my_coin_loader"></br><img src="/assets/${Math.floor(Math.random()*5+1)}.gif" height="100px" alt=""></div>`;               
-    let api = await fetch (`https://api.coingecko.com/api/v3/coins/list`);
-    coin_data = await api.json();
+    app.innerHTML = my_loader();
+    coin_data = await get_data('list');
     moveTo('home');
  })()
+
+///////////////////////////////////////////////////
+///////////////////// NAVIGATION /////////////////
+//////////////////////////////////////////////////
 
 
 function navTo(elem){
@@ -29,15 +40,15 @@ function navTo(elem){
     document.querySelector(`[data-target='${target}']`).classList.add('active');
 }
 
-async function moveTo(target) {
-    clearInterval(inter);
+function moveTo(target) {
+    clearInterval(update_chart);
     let html;
     app.innerHTML = '';
     switch (target) {
         case 'home': html = home(); break;
-        case 'reports': graph_build(report_list); return;
+        case 'reports': graph_build(); return;
         case 'about': html = about(); break;
-        case 'search' : html = search(); break;
+        case 'search' : html =  search(); break;
         case 'filter' : html = filter(); break;
         default: html = home(); break;
     }
@@ -55,104 +66,57 @@ function home() {
        return `<div class="boxes container-md">${card_html}</div>`;
 }
 
-function reports(my_data){
-    let graph_data = [];
-    if (report_list.length == 0) {
-        app.innerHTML=   'No currnecy chosen. Please choose at least one currency to view.';
-        return;
-    }
-
-    Object.entries(my_data).forEach(e => 
-        {let tname = (e[0])
-        let timing = (e[1])
-            graph_data.push({
-                type:"line",
-                axisYType: "secondary",
-                name: tname,
-                showInLegend: true,
-                markerSize: 0,
-                yValueFormatString: "$#.###",
-                dataPoints: timing
-            })        
-        })
-        console.log(graph_data);
-        var chart = new CanvasJS.Chart("app", {
-            title: {
-                text: "House Median Price"
-            },
-            axisX: {
-                valueFormatString: " HH:mm:ss"
-            },
-            axisY2: {
-                title: "Median List Price",
-                prefix: "$",
-                suffix: ""
-            },
-            toolTip: {
-                shared: true
-            },
-            legend: {
-                cursor: "pointer",
-                verticalAlign: "top",
-                horizontalAlign: "center",
-                dockInsidePlotArea: true,
-                itemclick: toogleDataSeries
-            },
-            data: graph_data
-        }
-        );
-        chart.render();
-        
-        function toogleDataSeries(e){
-            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                e.dataSeries.visible = false;
-            } else{
-                e.dataSeries.visible = true;
-            }
-            chart.render();
-        }
-}
-
 function about() {
-    return `<section class="container aboutme d-flex align-items-center" style="font-size:16px">
-                <div >
-                    <img class="my_img" src="assets/Me.jpeg" alt="" >
-                </div>
+    return `<div class='About_page container'>
+            <section class="container aboutme d-flex align-items-center justify-content-evenly" style="font-size:16px">
+                
                 <div class="text">
                     <h1>About</h1>
-                    
                     <p>Thank you for taking the time to look at my work. This project was completed during my Full-Stack programing course at John Brice Academy.</p>
                     <p>Here you can get the up-to-date exchange rate of any number of Crypto Currencies, as well as see a real-time performance graph comparing up to five different coins. </p>
                 </div>
+                <div >
+                    <img class="my_img" src="assets/Me.jpeg" alt="" >
+                </div>
             </section>
-            <footer class="container d-flex justify-content-between ">
+            <footer class="container d-flex justify-content-evenly ">
                 <i style="font-size:20px">Contact Info:</i>
-                <i class="fa fa-linkedin-square" style="font-size:36px"></i>
-                <i class="fa fa-github" style="font-size:36px"></i>
-                <i class="fa fa-facebook-f" style="font-size:36px"></i>
-                <i class="fa fa-whatsapp" style="font-size:36px"></i>
-                <i class="fa fa-envelope" style="font-size:28px"> ungar23@gmail.com</i>
-            </footer>`;
+                
+                <a href="mailto:ungar23@gmail.com" style="text-decoration:none"><i class="fa fa-envelope" style="font-size:36px"></i></a>
+                <a href="https://linkedin.com/in/omri-ungar-a02537219" target="_blank"><i class="fa fa-linkedin-square" style="font-size:36px"></i></a>
+                <a href="https://github.com/omriungar" target="_blank"><i class="fa fa-github" style="font-size:36px"></i></a>
+                <a href="https://wa.me/15551234567" target="_blank"><i class="fa fa-whatsapp" style="font-size:36px"></i></a>
+                <a href="https://www.facebook.com/omri.ungar.7" target="_blank"><i class="fa fa-facebook-f" style="font-size:36px"></i></a>
+            </footer>
+            </div>`;
 }
 
+///////////////////////////////////////////////////
+///////////////////// MORE INFO //////////////////
+//////////////////////////////////////////////////
+
 async function moreinfo(a_coin){
-    if(a_coin.getAttribute('aria-expanded')=='false'){
-        return;
-    }
+    if(a_coin.getAttribute('aria-expanded')=='false') return;
     let the_span = document.getElementById(`s_${a_coin.id}`);
-    if(a_coin.id in more_info && ( Date.now() - more_info[`${a_coin.id}`].test_time < 120000    )){
+    if(a_coin.id in more_info && ( Date.now() - more_info[`${a_coin.id}`].test_time < 120000)){
         the_span.innerHTML = new Info(more_info[a_coin.id]).create();
     }else{
-        the_span.innerHTML = `<div><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                Loading...</div>`
-        let api = await fetch (`https://api.coingecko.com/api/v3/coins/${a_coin.id}`);
-        more_info[a_coin.id] = await api.json();
+        the_span.innerHTML =`<div><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Loading...
+                            </div>`
+        more_info[a_coin.id] = await get_data(a_coin.id)
+        // let api = await fetch (`https://api.coingecko.com/api/v3/coins/${a_coin.id}`);
+        // more_info[a_coin.id] = await api.json();
         more_info[`${a_coin.id}`].test_time = new Date().getTime();
         setTimeout(() => {
             the_span.innerHTML = new Info(more_info[a_coin.id]).create();
         }, 1000);
     }
 }
+
+///////////////////////////////////////////////////
+///////////////////// SWITCH TOGGLE //////////////
+//////////////////////////////////////////////////
 
 function change(coin_switch){
     coin_switch.getAttribute('ison')=='false' ? toggle_on(coin_switch) : toggle_off(coin_switch); 
@@ -176,37 +140,6 @@ function toggle_off(coin_switch){
     report_list = (report_list.filter(n => n !== splitstr[0]));
     report_list_id = (report_list_id.filter(n => n !== splitstr[1]));
 }
-
-async function graph_build(arr){
-    app.innerHTML = `<div class="my_coin_loader"></br><img src="/assets/${Math.floor(Math.random()*5+1)}.gif" height="100px" alt=""></div>`;
-    let my_data_point ={};
-    arr.forEach(e => {
-        my_data_point[`${e}`.toUpperCase()] = [];
-    })
-    let my_url = arr.join();
-    inter = setInterval(async () => {
-        let res ={};
-        let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${my_url}&tsyms=USD`);
-        res = await api.json();
-        arr = Object.keys(res);
-        res = Object.entries(res);
-        let count = 0;
-       
-        arr.forEach(e => {
-            try {
-                console.log(e);
-                let x = new Date();
-                let y = Object.entries(res[count][1])[0][1];
-                let obj = {x:x, y:y};
-                my_data_point[`${e}`].push(obj);
-            } catch (error) {
-            }
-            count++;
-        })  
-        reports(my_data_point);
-    }, 2000);
-}
-
 
 function popup(coin_switch){
     popupdiv = document.createElement("div");
@@ -243,35 +176,28 @@ function close_modal(){
     elem_delete.remove();
 }
 
-// nav_toggle.addEventListener("click", function(event){
-//     console.log(11111);
-//     app.classList.add('toggler_press');
-//     app.classList.remove('my_app');
-// });
 
-// my_search.addEventListener("keypress", function(event) {
-//     if (event.key === "Enter") {
-//     moveTo('search');
-//   }
-// });
+///////////////////////////////////////////////////
+////////// SEARCH & FILTER BTNS //////////////////
+//////////////////////////////////////////////////
+
 my_search.addEventListener("keypress", event => event.key === "Enter" && moveTo('search'));
 
 
 function search(){
-    console.log(222);
-    let res = {};
-    let html = ''
-    // inp = my_serach.value;
-    inp = $('#search_input').val();
-    for (const coin of coin_data) {
-        if(inp == coin.symbol){
-            res = coin;
-            res = new Card(res).check_list();
-            html += new Card(res).create();
+        let res = {};
+        let html = ''
+        // inp = my_serach.value;
+        inp = $('#search_input').val();
+        for (const coin of coin_data) {
+            if(inp == coin.symbol){
+                res = coin;
+                res = new Card(res).check_list();
+                html += new Card(res).create();
+            }
         }
-    }
-    html = html=='' ? `<h1>Coin <b>"${inp}"</b> not in list...</h1>` : html;
-    return simple(html);
+        html = html=='' ? `<h1>Coin <b>"${inp}"</b> not in list...</h1>` : html;
+        return simple(html);
 }
 
 
@@ -292,10 +218,126 @@ function filter(){
 }
 
 function simple(html){
-    return `<div class="boxes container-md">${html}</div>
+     return `<div class="boxes container-md">${html}</div>
     </br>
     <div class="container"><button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button></div>`
 }
+
+
+///////////////////////////////////////////////////
+//////////////////////GRAPH BUILD/////////////////
+//////////////////////////////////////////////////
+
+async function graph_fetch(path){
+    let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${path}&tsyms=USD`);
+    return await api.json();
+}
+
+async function graph_build(){
+    let arr = report_list;
+    app.innerHTML = my_loader();
+    let my_data_point ={};
+    let my_url = arr.join();
+    res = await graph_fetch(my_url);
+    let filtered_arr = Object.keys(res);  //in case not all coins came back with data
+    filtered_arr = filtered_arr[0]=="Response" ? [] : filtered_arr;
+    arr.length > filtered_arr.length && alert (`No data for ${(arr.filter(x => filtered_arr.indexOf(x.toUpperCase())===-1))}`);
+    res = Object.entries(res);
+    let count = 0;
+    let x = new Date();
+    filtered_arr.forEach(e => {
+            my_data_point[e.toUpperCase()] = [];
+            let y = Object.entries(res[count][1])[0][1];
+            let obj = {x:x, y:y};
+            my_data_point[e.toUpperCase()].push(obj);
+            count++;       
+    }) 
+    setTimeout(() => {
+        reports(my_data_point,filtered_arr);
+    }, 1500); 
+    
+}
+
+function reports(my_data,arr){
+    if (report_list.length == 0) {
+        app.innerHTML=   `<div class='error'> No currnecy chosen. Please choose at least one currency to view.
+                           <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button> </div>`;
+        return;
+    }
+    if (arr.length == 0) {
+        app.innerHTML=   `<div class='error'> No data for chosen currency. Please choose different ones to view.
+                            <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button></div>`;
+        return;
+    }
+    let my_url_filtered = arr.join();
+    let graph_data = [];
+    Object.entries(my_data).forEach(e => 
+        {let tname = (e[0])
+        let timing = (e[1])
+            graph_data.push({
+                type:"line",
+                axisYType: "secondary",
+                name: tname,
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "$#.###",
+                dataPoints: timing
+            })        
+        })
+        var chart = new CanvasJS.Chart("app", {
+            title: {
+                text: `${arr.join(', ').toUpperCase()} to USD`
+            },
+            axisX: {
+                valueFormatString: " HH:mm:ss"
+            },
+            axisY2: {
+                title: "USD",
+                prefix: "$",
+                suffix: ""
+            },
+            toolTip: {
+                shared: true
+            },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                dockInsidePlotArea: true,
+                itemclick: toogleDataSeries
+            },
+            data: graph_data
+            
+        }
+        );
+        chart.render();
+
+        inter = async function (arr){
+            let res = await graph_fetch(my_url_filtered);
+            res = Object.entries(res);
+            for (let i = 0; i < arr.length; i++) {
+                let x = new Date();
+                let y = Object.entries(res[i][1])[0][1];
+                let obj = {x:x, y:y};
+                graph_data[i].dataPoints.push(obj);
+            }
+            chart.render();
+        };
+
+        update_chart = setInterval(()=>inter(arr), 2000);
+        
+        function toogleDataSeries(e){
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            } else{
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+}
+
+
+
 // ==================================================
 // =======================calss======================
 // ==================================================
@@ -381,3 +423,4 @@ create(){
 }
 
 }
+
