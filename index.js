@@ -5,7 +5,7 @@ let report_list = [];
 let report_list_id = [];
 let sixth_coin;
 let update_chart;
-;
+let loop_count;
 let my_search = document.getElementById('search_input');
 
 function my_loader(){
@@ -36,6 +36,7 @@ async function get_data(endp){
 function navTo(elem){
     let target = elem.dataset.target;
     moveTo(target);
+    target == 'search' || target == 'filter' ? target = 'home' : target = target;
     document.querySelectorAll('.nav-item > a').forEach(e => e.classList.remove('active'));
     document.querySelector(`[data-target='${target}']`).classList.add('active');
 }
@@ -58,7 +59,8 @@ function moveTo(target) {
 function home() {
     app.innerHTML=``
     let card_html ='';
-     for(let i=1000; i<=1010; i++){
+    loop_count = 0;
+     for(let i=0; i<=1010; i++){
         let coin = coin_data[i];
         coin = new Card(coin).check_list();
         card_html += new Card(coin).create();
@@ -89,6 +91,11 @@ function about() {
                 <a href="https://www.facebook.com/omri.ungar.7" target="_blank"><i class="fa fa-facebook-f" style="font-size:36px"></i></a>
             </footer>
             </div>`;
+}
+
+function navbar_toggler_click(elem){
+    app.classList.add('collapsed-nav');
+    if(elem.getAttribute('aria-expanded')=='false') app.classList.remove('collapsed-nav');
 }
 
 ///////////////////////////////////////////////////
@@ -189,6 +196,7 @@ function search(){
         let html = ''
         // inp = my_serach.value;
         inp = $('#search_input').val();
+        loop_count=0;
         for (const coin of coin_data) {
             if(inp == coin.symbol){
                 res = coin;
@@ -196,13 +204,14 @@ function search(){
                 html += new Card(res).create();
             }
         }
-        html = html=='' ? `<h1>Coin <b>"${inp}"</b> not in list...</h1>` : html;
+        html = html=='' ? `<div class='error'><h1>Coin <b>"${inp}"</b> not in list...</h1></div>` : html;
         return simple(html);
 }
 
 
 function filter(){
     let html ='';
+    loop_count=0;
     report_list_id.forEach(e => {
         for (const coin of coin_data) {
             if(e == coin.id){
@@ -213,8 +222,15 @@ function filter(){
             }
         } 
     })
-    html = html=='' ? `<h1>No coins in list...</h1>` : html;
+    // if (html == ''){
+    //     return error_s(`<h1>No coins in list...</h1>`);
+    // }
+    html = html=='' ? `<div class='error'><h1>No coins in list...</h1></div>` : html;
     return simple(html);
+}
+
+function error_s(html){
+    return `<div class='error'>${html}<button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button></div>`
 }
 
 function simple(html){
@@ -348,13 +364,14 @@ class Card{
     }
     
     check_list(){
-        this.obj.bool='false';
+        // this.obj.bool='false';
+        // this.obj.check='';
+        if (loop_count == report_list_id.length) return this.obj; //dont go in loop only if all coins on list were already checked 
         for (const e of report_list_id) {
             if(e==this.obj.id){
                 this.obj.check='checked';
-                this.obj.bool= 'true'; break;
-            }else{
-                this.obj.check='';
+                this.obj.bool= 'true'; 
+                loop_count++; break;
             }
         }
         return this.obj;

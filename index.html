@@ -17,36 +17,10 @@
 <body>
 
 
-    <!-- <div class="grid">
-        <header class="container-fluid g-col-4"> 
-            <span><img src="assets/Concept-cryptocurrency-bitcoin-on-transparent-background-PNG.png" width="20%" alt=""></span>
-            <span>Crypto</span>
-        </header>
-        <nav class="my-nav container g-col-8">
-            <ul class="nav nav-pills">
-                <li class="nav-item">
-                    <a onclick="navTo(this)"  data-target='home' class="nav-link active" aria-current="page" href="#">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="navTo(this)"  data-target='reports' class="nav-link"  href="#">Live Reports</a>
-                </li>
-                <li class="nav-item last">
-                    <a onclick="navTo(this)"  data-target='about' class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item search-bar d-flex">
-                    <input  class="form-control" type="text" placeholder="Search.." name="search" id="search_input">
-                    <button class="btn btn-primary" type="button" onclick="moveTo('search')"><i class="fa fa-search"></i></button>
-                    <button id="filter" class="btn btn-primary" type="button" onclick="moveTo('filter')"><i class="bi bi-filter-circle"></i></button>
-                </li>
-            </ul>             
-        </nav>
-    </div> -->
-    
-
     <nav class="navbar navbar-expand-lg bg-light fixed-top">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">Cryto </a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"  aria-label="Toggle navigation">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"  aria-label="Toggle navigation" onclick="navbar_toggler_click(this)">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -65,8 +39,8 @@
             <div class="d-flex" role="search">
                 <div class="nav-item search-bar d-flex">
                     <input  class="form-control" type="text" placeholder="Search.." name="search" id="search_input">
-                    <button class="btn btn-primary" type="button" onclick="moveTo('search')"><i class="fa fa-search"></i></button>
-                    <button id="filter" class="btn btn-primary" type="button" onclick="moveTo('filter')"><i class="bi bi-filter-circle"></i></button>
+                    <button class="btn btn-primary" type="button" data-target='search' onclick="navTo(this)"><i class="fa fa-search"></i></button>
+                    <button id="filter" class="btn btn-primary" type="button" data-target='filter' onclick="navTo(this)"><i class="bi bi-filter-circle"></i></button>
                 </div>
             </div>
           </div>
