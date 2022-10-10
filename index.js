@@ -1,11 +1,12 @@
 const app = document.querySelector('#app');
 let coin_data;
 let more_info = {};
-let report_list = [];
-let report_list_id = [];
+// let report_list = [];
+// let report_list_id = [];
+let report_list_id_name = [];
 let sixth_coin;
 let update_chart;
-let loop_count;
+let check_list_loop_count;
 let my_search = document.getElementById('search_input');
 
 function my_loader(){
@@ -59,7 +60,7 @@ function moveTo(target) {
 function home() {
     app.innerHTML=``
     let card_html ='';
-    loop_count = 0;
+    check_list_loop_count = 0;
      for(let i=0; i<=1010; i++){
         let coin = coin_data[i];
         coin = new Card(coin).check_list();
@@ -131,9 +132,10 @@ function change(coin_switch){
 
 function toggle_on(coin_switch){
     let splitstr = coin_switch.id.slice(2).split("+");
-    if(report_list.length < 5){
-        report_list.push(splitstr[0]);
-        report_list_id.push(splitstr[1]);
+    if(report_list_id_name.length < 5){
+        // report_list.push(splitstr[0]);
+        // report_list_id.push(splitstr[1]);
+        report_list_id_name.push([splitstr[1],splitstr[0]]);
         coin_switch.setAttribute('ison','true');
     } else{
         event.preventDefault();
@@ -144,20 +146,28 @@ function toggle_on(coin_switch){
 function toggle_off(coin_switch){
     let splitstr = coin_switch.id.slice(2).split("+");
     coin_switch.setAttribute('ison','false');
-    report_list = (report_list.filter(n => n !== splitstr[0]));
-    report_list_id = (report_list_id.filter(n => n !== splitstr[1]));
+    // report_list = (report_list.filter(n => n !== splitstr[0]));
+    // report_list_id = (report_list_id.filter(n => n !== splitstr[1]));
+    report_list_id_name = (report_list_id_name.filter(n => n[0] !== splitstr[1]));
 }
-
+////////////////////////////////////////////////////////
 function popup(coin_switch){
     popupdiv = document.createElement("div");
     popupdiv.classList.add('pop','modal-dialog','modal-lg');
     sixth_coin = coin_switch;
     let html = '';
-    for(i = 0; i < report_list.length ; i++){
+    // for(i = 0; i < report_list.length ; i++){
+    //     html += `
+    //     <div class="innerpop">${report_list[i]}</div>
+    //     <div class="form-check form-switch innerpop">
+    //     <input class="form-check-input" type="checkbox" role="switch" id="k_${report_list[i]}+${report_list_id[i]}" onclick="change2(this)" ison="true" checked >
+    //     </div> `
+    // }
+    for(i = 0; i < report_list_id_name.length ; i++){
         html += `
-        <div class="innerpop">${report_list[i]}</div>
-        <div class="form-check form-switch innerpop">
-        <input class="form-check-input" type="checkbox" role="switch" id="k_${report_list[i]}+${report_list_id[i]}" onclick="change2(this)" ison="true" checked >
+        <div class="innerpop">${report_list_id_name[i][1]} <br/><span>${report_list_id_name[i][0]}<span></div>
+        <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="k_${report_list_id_name[i][1]}+${report_list_id_name[i][0]}" onclick="change2(this)" ison="true" checked >
         </div> `
     }
     popupdiv.innerHTML = new MyModal(html,coin_switch.id.slice(2)).create();
@@ -172,13 +182,15 @@ function change2(coin_switch){
         original_elem.click();
     }else{
         let splitstr = coin_switch.id.slice(2).split("+");
-        report_list = (report_list.filter(n => n !== splitstr[0]));
-        report_list_id = (report_list_id.filter(n => n !== splitstr[1]))
+        // report_list = (report_list.filter(n => n !== splitstr[0]));
+        // report_list_id = (report_list_id.filter(n => n !== splitstr[1]))
+        report_list_id_name = (report_list_id_name.filter(n => n[0] !== splitstr[1]));
     }
 }
 
 function close_modal(){
-    report_list.length >= 5 || change2(sixth_coin);
+    report_list_id_name.length >= 5 || change2(sixth_coin);
+    // report_list.length >= 5 || change2(sixth_coin);
     let elem_delete = document.getElementById("exampleModal");
     elem_delete.remove();
 }
@@ -188,57 +200,76 @@ function close_modal(){
 ////////// SEARCH & FILTER BTNS //////////////////
 //////////////////////////////////////////////////
 
-my_search.addEventListener("keypress", event => event.key === "Enter" && moveTo('search'));
+my_search.addEventListener("keypress", event => event.key === "Enter" && navTo(document.querySelector(`[data-target='search']`)));
 
+function s_or_f(coin){
+    res = coin;
+    res = new Card(res).check_list();
+    return html = new Card(res).create();
+}
 
 function search(){
         let res = {};
         let html = ''
         // inp = my_serach.value;
         inp = $('#search_input').val();
-        loop_count=0;
+        check_list_loop_count=0;
         for (const coin of coin_data) {
             if(inp == coin.symbol){
-                res = coin;
-                res = new Card(res).check_list();
-                html += new Card(res).create();
+                // res = coin;
+                // res = new Card(res).check_list();
+                // html += new Card(res).create();
+                html += s_or_f(coin);
             }
         }
-        html = html=='' ? `<div class='error'><h1>Coin <b>"${inp}"</b> not in list...</h1></div>` : html;
-        return simple(html);
+        if (html == ''){
+            return error_s(`<h1>Coin <b>"${inp}"</b> not in list...</h1>`);
+        }
+        // html = html=='' ? `<div class='error'><h1>Coin <b>"${inp}"</b> not in list...</h1></div>` : html;
+        return correct_s(html,'hide');
 }
 
 
 function filter(){
     let html ='';
-    loop_count=0;
-    report_list_id.forEach(e => {
+    check_list_loop_count=0;
+    // report_list_id.forEach(e => {
+    report_list_id_name.forEach(e => {
         for (const coin of coin_data) {
-            if(e == coin.id){
-                res = coin;
-                res = new Card(res).check_list();
-                html += new Card(res).create();
+            if(e[0] == coin.id){
+                // res = coin;
+                // res = new Card(res).check_list();
+                // html += new Card(res).create();
+                html += s_or_f(coin);
                 break;
             }
         } 
     })
-    // if (html == ''){
-    //     return error_s(`<h1>No coins in list...</h1>`);
-    // }
-    html = html=='' ? `<div class='error'><h1>No coins in list...</h1></div>` : html;
-    return simple(html);
+    if (html == ''){
+        return error_s(`<h1>No coins in list...</h1>`);
+    }
+    // html = html=='' ? `<div class='error'><h1>No coins in list...</h1></div>` : html;
+    return correct_s(html,'');
 }
 
 function error_s(html){
-    return `<div class='error'>${html}<button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button></div>`
+    return `<div class='error'>${html}<button class="btn btn-secondary" type="button" onclick="moveTo('home')">Show All</button></div>`
 }
 
-function simple(html){
+function correct_s(html,hide){
      return `<div class="boxes container-md">${html}</div>
     </br>
-    <div class="container"><button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button></div>`
+    <div class="container"><button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button>
+    <button class="btn btn-secondary ${hide}" type="button" onclick="deselect_all('filter')">Deselect All</button></div>`
 }
 
+function deselect_all(location){
+    // location == 'filter' && report_list_id_name.forEach( e => change2(document.getElementById(`t_${e[1]}+${e[0]}`)));
+    // location == 'modal' && report_list_id_name.forEach( e => (document.getElementById(`k_${e[1]}+${e[0]}`)).click());
+    report_list_id_name.forEach
+    ( e => location == 'filter' ? change2(document.getElementById(`t_${e[1]}+${e[0]}`)) : (document.getElementById(`k_${e[1]}+${e[0]}`)).click())
+
+}
 
 ///////////////////////////////////////////////////
 //////////////////////GRAPH BUILD/////////////////
@@ -250,7 +281,9 @@ async function graph_fetch(path){
 }
 
 async function graph_build(){
-    let arr = report_list;
+    let arr = [];
+    report_list_id_name.forEach( e => arr.push(e[1]))
+    // let arr = report_list;
     app.innerHTML = my_loader();
     let my_data_point ={};
     let my_url = arr.join();
@@ -275,7 +308,7 @@ async function graph_build(){
 }
 
 function reports(my_data,arr){
-    if (report_list.length == 0) {
+    if (report_list_id_name.length == 0) {
         app.innerHTML=   `<div class='error'> No currnecy chosen. Please choose at least one currency to view.
                            <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button> </div>`;
         return;
@@ -364,14 +397,14 @@ class Card{
     }
     
     check_list(){
-        // this.obj.bool='false';
-        // this.obj.check='';
-        if (loop_count == report_list_id.length) return this.obj; //dont go in loop only if all coins on list were already checked 
-        for (const e of report_list_id) {
-            if(e==this.obj.id){
+        this.obj.bool='false';
+        this.obj.check='';
+        if (check_list_loop_count == report_list_id_name.length) return this.obj; //dont go in loop only if all coins on list were already checked 
+        for (const e of report_list_id_name) {
+            if(e[0]==this.obj.id){
                 this.obj.check='checked';
                 this.obj.bool= 'true'; 
-                loop_count++; break;
+                check_list_loop_count++; break;
             }
         }
         return this.obj;
@@ -388,14 +421,14 @@ class Card{
                             </button>
                         </p>
                         <div class="collapse" id="i_${this.obj.id}">
-                        <div class="card card-body">
-                            <span class="dropdown" id="s_${this.obj.id}"></span>
+                            <div class="card card-body">
+                                <span class="dropdown" id="s_${this.obj.id}"></span>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch main_switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="t_${this.obj.symbol}+${this.obj.id}" onclick="change(this)" ison="${this.obj.bool}" ${this.obj.check} >
                         </div>
                     </div>
-                    <div class="form-check form-switch main_switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="t_${this.obj.symbol}+${this.obj.id}" onclick="change(this)" ison="${this.obj.bool}" ${this.obj.check} >
-                    </div>
-                </div>
                 
                 </div>` 
     }
@@ -432,6 +465,7 @@ create(){
                         ${this.html}
                     </div>
                     <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="deselect_all('modal')" >Deselect All</button>
                     <button type="button" class="btn btn-secondary" onclick="close_modal()" data-bs-dismiss="modal">Continue</button>
                     </div>
                     </div>
