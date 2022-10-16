@@ -1,8 +1,6 @@
 const app = document.querySelector('#app');
 let coin_data;
 let more_info = {};
-// let report_list = [];
-// let report_list_id = [];
 let report_list_id_name = [];
 let sixth_coin;
 let update_chart;
@@ -13,21 +11,26 @@ function my_loader(){
     return `<div class="my_coin_loader"></br><img src="/assets/${Math.floor(Math.random()*5+1)}.gif" height="100px" alt=""></div>`;
 }
 
+(async () => {
+    app.innerHTML = my_loader();
+    coin_data = await get_data('list');
+    if (coin_data == 'error') return;
+    setTimeout(() => {
+        moveTo('home');
+    }, 1500); 
+ })()
+
 async function get_data(endp){
     try {
         let api = await fetch (`https://api.coingecko.com/api/v3/coins/${endp}`);
         return await api.json();
     } catch (error) {
-        return alert('Error loading data. Please try again, or contact support.')
+        app.innerHTML = `<div class='error'>Error loading data. Please try again, or contact support</div>`
+        return 'error';
     }
    
 }
 
-(async () => {
-    app.innerHTML = my_loader();
-    coin_data = await get_data('list');
-    moveTo('home');
- })()
 
 ///////////////////////////////////////////////////
 ///////////////////// NAVIGATION /////////////////
@@ -37,13 +40,14 @@ async function get_data(endp){
 function navTo(elem){
     let target = elem.dataset.target;
     moveTo(target);
-    target == 'search' || target == 'filter' ? target = 'home' : target = target;
+    target == 'search' || target == 'filter' ? target = 'home' : target = target; //search or filter returns to HOME tab
     document.querySelectorAll('.nav-item > a').forEach(e => e.classList.remove('active'));
     document.querySelector(`[data-target='${target}']`).classList.add('active');
 }
 
 function moveTo(target) {
-    clearInterval(update_chart);
+    clearInterval(update_chart); //stop auto chart update when moving tabs
+    if (coin_data == 'error') return; //keep screen on error msg
     let html;
     app.innerHTML = '';
     switch (target) {
@@ -61,9 +65,9 @@ function home() {
     app.innerHTML=``
     let card_html ='';
     check_list_loop_count = 0;
-     for(let i=0; i<=1010; i++){
+     for(let i=0; i<=99; i++){ //for loop because of testing only 100
         let coin = coin_data[i];
-        coin = new Card(coin).check_list();
+        coin = new Card(coin).check_list(); //keeps client's chosen coins through page re-render
         card_html += new Card(coin).create();
        }
        return `<div class="boxes container-md">${card_html}</div>`;
@@ -94,9 +98,10 @@ function about() {
             </div>`;
 }
 
+
 function navbar_toggler_click(elem){
     app.classList.add('collapsed-nav');
-    if(elem.getAttribute('aria-expanded')=='false') app.classList.remove('collapsed-nav');
+    elem.getAttribute('aria-expanded')=='false' && app.classList.remove('collapsed-nav');
 }
 
 ///////////////////////////////////////////////////
@@ -106,16 +111,18 @@ function navbar_toggler_click(elem){
 async function moreinfo(a_coin){
     if(a_coin.getAttribute('aria-expanded')=='false') return;
     let the_span = document.getElementById(`s_${a_coin.id}`);
-    if(a_coin.id in more_info && ( Date.now() - more_info[`${a_coin.id}`].test_time < 120000)){
+    if(a_coin.id in more_info && ( Date.now() - more_info[a_coin.id].test_time < 120000)){
         the_span.innerHTML = new Info(more_info[a_coin.id]).create();
     }else{
         the_span.innerHTML =`<div><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 Loading...
                             </div>`
-        more_info[a_coin.id] = await get_data(a_coin.id)
-        // let api = await fetch (`https://api.coingecko.com/api/v3/coins/${a_coin.id}`);
-        // more_info[a_coin.id] = await api.json();
-        more_info[`${a_coin.id}`].test_time = new Date().getTime();
+        more_info[a_coin.id] = await get_data(a_coin.id);
+        if(more_info[a_coin.id] == 'Could not find coin with the given id'){
+            the_span.innerHTML = 'Error loading info';
+            return;
+        } 
+        more_info[a_coin.id].test_time = new Date().getTime(); //adds time-stamp to obj
         setTimeout(() => {
             the_span.innerHTML = new Info(more_info[a_coin.id]).create();
         }, 1000);
@@ -131,11 +138,9 @@ function change(coin_switch){
 }
 
 function toggle_on(coin_switch){
-    let splitstr = coin_switch.id.slice(2).split("+");
+    let splitstr = coin_switch.id.slice(2).split("+"); //need id to find element, need name for graph
     if(report_list_id_name.length < 5){
-        // report_list.push(splitstr[0]);
-        // report_list_id.push(splitstr[1]);
-        report_list_id_name.push([splitstr[1],splitstr[0]]);
+        report_list_id_name.push([splitstr[1],splitstr[0]]); //[coin.id , coin.name]
         coin_switch.setAttribute('ison','true');
     } else{
         event.preventDefault();
@@ -146,23 +151,14 @@ function toggle_on(coin_switch){
 function toggle_off(coin_switch){
     let splitstr = coin_switch.id.slice(2).split("+");
     coin_switch.setAttribute('ison','false');
-    // report_list = (report_list.filter(n => n !== splitstr[0]));
-    // report_list_id = (report_list_id.filter(n => n !== splitstr[1]));
     report_list_id_name = (report_list_id_name.filter(n => n[0] !== splitstr[1]));
 }
-////////////////////////////////////////////////////////
+
 function popup(coin_switch){
     popupdiv = document.createElement("div");
     popupdiv.classList.add('pop','modal-dialog','modal-lg');
-    sixth_coin = coin_switch;
+    sixth_coin = coin_switch; //saves the coin the user wanted to add
     let html = '';
-    // for(i = 0; i < report_list.length ; i++){
-    //     html += `
-    //     <div class="innerpop">${report_list[i]}</div>
-    //     <div class="form-check form-switch innerpop">
-    //     <input class="form-check-input" type="checkbox" role="switch" id="k_${report_list[i]}+${report_list_id[i]}" onclick="change2(this)" ison="true" checked >
-    //     </div> `
-    // }
     for(i = 0; i < report_list_id_name.length ; i++){
         html += `
         <div class="innerpop">${report_list_id_name[i][1]} <br/><span>${report_list_id_name[i][0]}<span></div>
@@ -180,17 +176,13 @@ function change2(coin_switch){
     original_elem = document.getElementById(`${original}`);
     if(original_elem){
         original_elem.click();
-    }else{
-        let splitstr = coin_switch.id.slice(2).split("+");
-        // report_list = (report_list.filter(n => n !== splitstr[0]));
-        // report_list_id = (report_list_id.filter(n => n !== splitstr[1]))
-        report_list_id_name = (report_list_id_name.filter(n => n[0] !== splitstr[1]));
+    }else{                  //relevant for testing - when some coins were not printed to screen, but checked through SEARCH
+        change(coin_switch);
     }
 }
 
 function close_modal(){
-    report_list_id_name.length >= 5 || change2(sixth_coin);
-    // report_list.length >= 5 || change2(sixth_coin);
+    report_list_id_name.length < 5 && change2(sixth_coin);
     let elem_delete = document.getElementById("exampleModal");
     elem_delete.remove();
 }
@@ -203,29 +195,19 @@ function close_modal(){
 my_search.addEventListener("keypress", event => event.key === "Enter" && navTo(document.querySelector(`[data-target='search']`)));
 
 function s_or_f(coin){
-    res = coin;
-    res = new Card(res).check_list();
-    return html = new Card(res).create();
+    coin = new Card(coin).check_list();
+    return html = new Card(coin).create();
 }
 
 function search(){
-        let res = {};
-        let html = ''
-        // inp = my_serach.value;
+        let html = '';
         inp = $('#search_input').val();
-        check_list_loop_count=0;
+        check_list_loop_count=0; //helps to stop check_list() after all coins in report_list were checked
         for (const coin of coin_data) {
-            if(inp == coin.symbol){
-                // res = coin;
-                // res = new Card(res).check_list();
-                // html += new Card(res).create();
-                html += s_or_f(coin);
-            }
+             if (inp == coin.symbol)  html += s_or_f(coin); //no break - in case of more than one coin with same name
         }
-        if (html == ''){
-            return error_s(`<h1>Coin <b>"${inp}"</b> not in list...</h1>`);
-        }
-        // html = html=='' ? `<div class='error'><h1>Coin <b>"${inp}"</b> not in list...</h1></div>` : html;
+        if (!html)  return error_s(`<h1>Coin <b>"${inp}"</b> not in list...</h1>`);
+        app.innerHTML = '';
         return correct_s(html,'hide');
 }
 
@@ -233,42 +215,39 @@ function search(){
 function filter(){
     let html ='';
     check_list_loop_count=0;
-    // report_list_id.forEach(e => {
     report_list_id_name.forEach(e => {
         for (const coin of coin_data) {
             if(e[0] == coin.id){
-                // res = coin;
-                // res = new Card(res).check_list();
-                // html += new Card(res).create();
                 html += s_or_f(coin);
                 break;
             }
         } 
     })
-    if (html == ''){
-        return error_s(`<h1>No coins in list...</h1>`);
-    }
-    // html = html=='' ? `<div class='error'><h1>No coins in list...</h1></div>` : html;
-    return correct_s(html,'');
+    if (!html) return error_s(`<h1>No coins in list...</h1>`);
+    return correct_s(html,'', 'all_select_btn');
 }
 
 function error_s(html){
-    return `<div class='error'>${html}<button class="btn btn-secondary" type="button" onclick="moveTo('home')">Show All</button></div>`
+    console.log(222);
+    return `<div class='error'>${html}<button class="btn btn-secondary" data-target="home" type="button" onclick="navTo(this)">Return HOME</button></div>`
 }
 
-function correct_s(html,hide){
+function correct_s(html,hide,my_class){
      return `<div class="boxes container-md">${html}</div>
     </br>
     <div class="container"><button class="btn btn-primary" type="button" onclick="moveTo('home')">Show All</button>
-    <button class="btn btn-secondary ${hide}" type="button" onclick="deselect_all('filter')">Deselect All</button></div>`
+    <button class="btn btn-danger ${hide} ${my_class}" type="button" onclick="deselect_all('card-body')">Deselect All</button>
+    <button class="btn btn-success hide ${my_class}" type="button" onclick="deselect_all('card-body', 'select')">select All</button></div>`
 }
 
-function deselect_all(location){
-    // location == 'filter' && report_list_id_name.forEach( e => change2(document.getElementById(`t_${e[1]}+${e[0]}`)));
-    // location == 'modal' && report_list_id_name.forEach( e => (document.getElementById(`k_${e[1]}+${e[0]}`)).click());
-    report_list_id_name.forEach
-    ( e => location == 'filter' ? change2(document.getElementById(`t_${e[1]}+${e[0]}`)) : (document.getElementById(`k_${e[1]}+${e[0]}`)).click())
-
+function deselect_all(location, select){
+    let elems = document.querySelectorAll(`.${location} > .form-switch > input`);
+    elems.forEach(e => {
+        if (select == 'select' && !e.checked) e.click(); //click only unselected switched
+        if (select != 'select' && e.checked) e.click(); //click only selected switches
+    })
+    document.getElementsByClassName('all_select_btn')[0].classList.toggle('hide');
+    document.getElementsByClassName('all_select_btn')[1].classList.toggle('hide');
 }
 
 ///////////////////////////////////////////////////
@@ -276,50 +255,59 @@ function deselect_all(location){
 //////////////////////////////////////////////////
 
 async function graph_fetch(path){
-    let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${path}&tsyms=USD`);
-    return await api.json();
+    try {
+        // let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=khegb&tsyms=USD`);
+        let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${path}&tsyms=USD`);
+        return await api.json();
+    } catch (error) {
+        console.log(error)
+        return error;
+    }
+    
 }
 
 async function graph_build(){
-    let arr = [];
-    report_list_id_name.forEach( e => arr.push(e[1]))
-    // let arr = report_list;
     app.innerHTML = my_loader();
     let my_data_point ={};
+    let arr = [];
+    report_list_id_name.forEach( e => arr.push(e[1].toUpperCase())); //graph api needs coin NAME in uppercase
     let my_url = arr.join();
-    res = await graph_fetch(my_url);
-    let filtered_arr = Object.keys(res);  //in case not all coins came back with data
-    filtered_arr = filtered_arr[0]=="Response" ? [] : filtered_arr;
-    arr.length > filtered_arr.length && alert (`No data for ${(arr.filter(x => filtered_arr.indexOf(x.toUpperCase())===-1))}`);
+    let res = await graph_fetch(my_url);
+    arr = Object.keys(res);  //in case not all coins came back with data
+    if (arr.length==0) return app.innerHTML = error_s('<h1>Network failure. Please try again.</h1>'); //fetch fail
+    arr = arr[0]=="Response" ? [] : arr; //error response
+    report_list_id_name.length > arr.length && //display coins that didnt return with data
+    alert (`ATTENTION! No data for: \n ${(report_list_id_name.filter(x => arr.indexOf(x[1].toUpperCase())===-1)).join('\n')}`);
     res = Object.entries(res);
     let count = 0;
     let x = new Date();
-    filtered_arr.forEach(e => {
-            my_data_point[e.toUpperCase()] = [];
+    arr.forEach(e => {
+            my_data_point[e] = [];
             let y = Object.entries(res[count][1])[0][1];
             let obj = {x:x, y:y};
-            my_data_point[e.toUpperCase()].push(obj);
+            my_data_point[e].push(obj);
             count++;       
     }) 
     setTimeout(() => {
-        reports(my_data_point,filtered_arr);
+        reports(my_data_point,arr);
     }, 1500); 
     
 }
 
 function reports(my_data,arr){
-    if (report_list_id_name.length == 0) {
+    if (report_list_id_name.length == 0) { //no coins chosen
         app.innerHTML=   `<div class='error'> No currnecy chosen. Please choose at least one currency to view.
                            <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button> </div>`;
         return;
     }
-    if (arr.length == 0) {
+    if (arr.length == 0) { //no data for chosen coins
         app.innerHTML=   `<div class='error'> No data for chosen currency. Please choose different ones to view.
                             <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button></div>`;
         return;
     }
-    let my_url_filtered = arr.join();
+    let my_url_filtered = arr.join(); //in case not all coins have data in graph api
     let graph_data = [];
+    console.log(my_data);
     Object.entries(my_data).forEach(e => 
         {let tname = (e[0])
         let timing = (e[1])
@@ -334,6 +322,7 @@ function reports(my_data,arr){
             })        
         })
         var chart = new CanvasJS.Chart("app", {
+            backgroundColor: "rgba(255,255,255,0.5)",
             title: {
                 text: `${arr.join(', ').toUpperCase()} to USD`
             },
@@ -440,38 +429,50 @@ class Info{
     }
    
     create(){
-        return   ` <div> USD: ${this.obj.market_data.ath.usd}&#36</br>
-                    EUR: ${this.obj.market_data.ath.eur}&#8364 </br>
-                    ILS: ${this.obj.market_data.ath.ils}&#8362 </br></div>
+        return   ` <div> USD: ${this.obj.market_data.current_price.usd}&#36</br>
+                    EUR: ${this.obj.market_data.current_price.eur}&#8364 </br>
+                    ILS: ${this.obj.market_data.current_price.ils}&#8362 </br></div>
                     <div class="thumb"><img  src="${this.obj.image.small}"></div>`
     };
 }
 
 class MyModal{
-constructor(html,n){
-    this.html = html;
-    this.n=n;
-}
+    constructor(html,n){
+        this.html = html;
+        this.n=n;
+    }
 
-create(){
-   return `<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    create(){
+    return `<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Only 5 coins allowed! If you want to add <b>${this.n.split("+")[0]}</b> to the report, choose one or more to remove</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="close_modal()" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Only 5 coins allowed! If you want to add <b>${this.n.split("+")[0]}</b> to the report, choose one or more to remove</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="close_modal()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${this.html}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger all_select_btn"  onclick="deselect_all('modal-body')" >Deselect All</button>
+                            <button class="btn btn-success hide all_select_btn" type="button"  onclick="deselect_all('modal-body', 'select')">select All</button>
+                            <button type="button" class="btn btn-secondary" onclick="close_modal()" data-bs-dismiss="modal">Continue</button>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        ${this.html}
-                    </div>
-                    <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="deselect_all('modal')" >Deselect All</button>
-                    <button type="button" class="btn btn-secondary" onclick="close_modal()" data-bs-dismiss="modal">Continue</button>
-                    </div>
-                    </div>
-                    </div>
-                    </div>`
-}
+                </div>
+            </div>`
+    }
 
 }
 
+function test(){
+    setTimeout(() => {
+        let elem = document.querySelectorAll('.form-check-input');
+        for (let i = 0; i < 6; i++) {
+            elem[i].click();
+            
+        }
+    }, 5000);
+    
+}
+test();

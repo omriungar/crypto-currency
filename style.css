@@ -1,83 +1,28 @@
 body{
-    /* color: white; */
     background-image: url('./assets/pexels-ds-stories-7267496.jpg');
-    /* background-size: contain; */
     background-attachment: fixed;
     background-repeat: no-repeat;
     box-sizing: border-box;
-    /* background-color: aquamarine;  */
 }
-
-.topper{
-    /* display: block; */
-    /* position: fixed; */
-    /* top: 0; */
-    /* z-index: 999; */
-    /* margin-bottom: 1erm; */
-    /* background-color: red; */
-}
-header {
-    /* display: block; */
-    /* z-index: 999;
-    position: fixed;
-    margin-bottom: 1px;
-    top: 0; */
-    /* background-color: lightblue; */
-    /* color: white; */
-    /* background-color: #fff;
-    background-color: rgba(255,255,255,0.5); */
-    /* vertical-align: baseline; */
-    /* display: flex; */
-    /* justify-content: space-between; */
-    /* font-size: 100px; */
-    /* height: 50%; */
-}
-/* header > img{
-    width:400px;
-} */
 .navbar{
-    /* background: fixed url("assets/seamless-2033661_640.jpg"); */
     flex-wrap: nowrap;
     margin-top: 0;
-    /* background-color: red;
-    background-color: rgba(255,255,255,0.5);
-    z-index: 9999999; */
-    /* background-image: url('./assets/pexels-gdtography-950241.jpg'); */
 }
 .navbar-toggler{
     background-color: rgba(255, 255, 255, 0.677);
 }
 nav{
     background-image: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)), url("./assets/pexels-ds-stories-7267496.jpg");
-    /* background-image: url('./assets/pexels-ds-stories-7267496.jpg'); */
-    /* background-color: lightblue; */
-    /* background-color: #fff;
-    background-color: rgba(255,255,255,0.5);
-    background-color: lightblue; */
-    /* padding: 1px; */
-    /* z-index: 999; */
-    /* display: block; */
-    /* position: fixed; */
-    /* top: 50px; */
-    /* position: sticky; */
     margin-top: 1%;
-    /* display: flex; */
-    /* justify-content: space-between; */
     width:100%;
-    /* flex-direction: column-reverse; */
-    /* border: 1px solid black; */
-    /* display: none; */
 }
 #search_input{
     margin-right: 2%;
 }
 
 .my_app{
-    /* background-color: white; */
-    /* margin-top: 1rem; */
     margin-top: 80px;
     transition: margin-top 500ms;
-    /* max-height: 250px; */
 }
 
 .my_img{
@@ -87,26 +32,8 @@ nav{
 .hide{
     display: none;
 }
-/* .text{
-    text-align: center;
-} */
 .my_coin_loader{
-    /* background-color: red;
-    border: 10px black solid; */
     text-align: center;
-    /* width: 20%; */
-    /* height: 100%;/ */
-}
-/* .my_coin_loader > img{
-    background-color: red;
-    border: 5px solid black;
-} */
-.search-bar {
-    /* color:rebeccapurple; */
-    /* margin-left: auto; */
-
-    /* margin-top: 1rem; */
-    /* display: inline; */
 }
 .error{
     text-align: center;
@@ -129,7 +56,7 @@ h5{
 }
 .About_page{
     padding: 10px;
-    background-image: url('./assets/pexels-gdtography-950241.jpg');
+    background-color: rgba(255,255,255,0.5);
 }
 .text{
     text-align: center;
@@ -139,17 +66,10 @@ footer{
     padding: 10px;
     
 }
-/* .thumb{
-    position: absolute;
-    margin-left:80%;
-} */
 .dropdown{
     display: flex;
     justify-content: space-between;
 }
-/* .form-control{
-    display: inline;
-} */
 #filter{
     margin-left: 2%;
     margin-right: 1rem;
@@ -162,57 +82,28 @@ footer{
     flex-wrap: wrap;
     font-size: larger;
     font-weight: bold;
-    /* background-color: red; */
 }
 .innerpop{
-    /* border-bottom: 1px double black; */
     flex-basis: 70%;
     margin-bottom: 1%;
-    /* text-align: center; */
 }
 .innerpop > span{
     font-size: smaller;
     color: #6c757d!important;
-}
-.mmm{
-    /* display: inline; */
-    /* border-bottom: 1px double black; */
-    /* flex-basis: 10%; */
-
 }
 .main_switch{
     position:absolute;
     left: 80%;
     top: 15px;
 }
-
-/* .last{
-    flex:1
-} */
 @media only screen and (max-width: 767.9px) {
-    /* .search-bar {
-      margin-left: 0;
-    } */
     .main_card {
         width: 50%;
-        /* margin-left: 3%; */
       }
-    /* footer{
-        flex-direction: column;
-    } */
-    /* header{
-        font-size: 50px;
-    } */
-    /* header > img{
-        width: 150px;
-    } */
   }
 
   
   @media only screen and (max-width: 576px) {
-    /* nav {
-      max-width: 530px;
-    } */
     .main_card {
         width: 94%;
         margin-left: 3%;
@@ -236,10 +127,6 @@ footer{
     .search-bar{
         margin-top: 2%;
     }
-    /* .nav{
-        flex-basis: 50%;
-        justify-content: space-between;
-    } */
     .form-control{
         width: 57%;
     }
