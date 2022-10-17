@@ -14,7 +14,10 @@ function my_loader(){
 (async () => {
     app.innerHTML = my_loader();
     coin_data = await get_data('list');
-    if (coin_data == 'error') return;
+    if (coin_data == 'error'){
+        app.innerHTML = `<div class='error'>Error loading data. Please try again, or contact support</div>`;
+        return;
+    } 
     setTimeout(() => {
         moveTo('home');
     }, 1500); 
@@ -22,10 +25,10 @@ function my_loader(){
 
 async function get_data(endp){
     try {
+        // let api = await fetch (`https://api.codetabs.com/v1/proxy/?quest=https://api.coingecko.com/api/v3/coins/${endp}`); //added proxy due to CORS problem
         let api = await fetch (`https://api.coingecko.com/api/v3/coins/${endp}`);
         return await api.json();
     } catch (error) {
-        app.innerHTML = `<div class='error'>Error loading data. Please try again, or contact support</div>`
         return 'error';
     }
    
@@ -40,14 +43,14 @@ async function get_data(endp){
 function navTo(elem){
     let target = elem.dataset.target;
     moveTo(target);
-    target == 'search' || target == 'filter' ? target = 'home' : target = target; //search or filter returns to HOME tab
+    target = target == 'search' || target == 'filter' ?  'home' :  target; //search or filter returns to HOME tab
     document.querySelectorAll('.nav-item > a').forEach(e => e.classList.remove('active'));
     document.querySelector(`[data-target='${target}']`).classList.add('active');
 }
 
 function moveTo(target) {
     clearInterval(update_chart); //stop auto chart update when moving tabs
-    if (coin_data == 'error') return; //keep screen on error msg
+    if (coin_data == 'error') return;
     let html;
     app.innerHTML = '';
     switch (target) {
@@ -65,12 +68,12 @@ function home() {
     app.innerHTML=``
     let card_html ='';
     check_list_loop_count = 0;
-     for(let i=0; i<=99; i++){ //for loop because of testing only 100
+     for(let i=1; i<=1000; i++){ //for loop because of testing only 100
         let coin = coin_data[i];
         coin = new Card(coin).check_list(); //keeps client's chosen coins through page re-render
         card_html += new Card(coin).create();
        }
-       return `<div class="boxes container-md">${card_html}</div>`;
+    return `<div class="boxes container-md">${card_html}</div>`;
 }
 
 function about() {
@@ -88,7 +91,6 @@ function about() {
             </section>
             <footer class="container d-flex justify-content-evenly ">
                 <i style="font-size:20px">Contact Info:</i>
-                
                 <a href="mailto:ungar23@gmail.com" style="text-decoration:none"><i class="fa fa-envelope" style="font-size:36px"></i></a>
                 <a href="https://linkedin.com/in/omri-ungar-a02537219" target="_blank"><i class="fa fa-linkedin-square" style="font-size:36px"></i></a>
                 <a href="https://github.com/omriungar" target="_blank"><i class="fa fa-github" style="font-size:36px"></i></a>
@@ -99,7 +101,7 @@ function about() {
 }
 
 
-function navbar_toggler_click(elem){
+function navbar_toggler_click(elem){ //controls margin-top of app
     app.classList.add('collapsed-nav');
     elem.getAttribute('aria-expanded')=='false' && app.classList.remove('collapsed-nav');
 }
@@ -109,7 +111,9 @@ function navbar_toggler_click(elem){
 //////////////////////////////////////////////////
 
 async function moreinfo(a_coin){
-    if(a_coin.getAttribute('aria-expanded')=='false') return;
+    if(a_coin.getAttribute('aria-expanded')=='false'){
+        return;
+    }
     let the_span = document.getElementById(`s_${a_coin.id}`);
     if(a_coin.id in more_info && ( Date.now() - more_info[a_coin.id].test_time < 120000)){
         the_span.innerHTML = new Info(more_info[a_coin.id]).create();
@@ -118,11 +122,16 @@ async function moreinfo(a_coin){
                                 Loading...
                             </div>`
         more_info[a_coin.id] = await get_data(a_coin.id);
-        if(more_info[a_coin.id] == 'Could not find coin with the given id'){
-            the_span.innerHTML = 'Error loading info';
+        
+        if(more_info[a_coin.id] == 'Could not find coin with the given id'){ //in case of id without info
+            the_span.innerHTML = 'Error loading info'; 
             return;
         } 
-        more_info[a_coin.id].test_time = new Date().getTime(); //adds time-stamp to obj
+        if (!more_info[a_coin.id].market_data.current_price.usd){ //no current price data. example - ome
+            the_span.innerHTML = 'No price data for chosen coin';
+            return;
+        }
+        more_info[a_coin.id].test_time = new Date().getTime(); 
         setTimeout(() => {
             the_span.innerHTML = new Info(more_info[a_coin.id]).create();
         }, 1000);
@@ -228,7 +237,6 @@ function filter(){
 }
 
 function error_s(html){
-    console.log(222);
     return `<div class='error'>${html}<button class="btn btn-secondary" data-target="home" type="button" onclick="navTo(this)">Return HOME</button></div>`
 }
 
@@ -260,7 +268,6 @@ async function graph_fetch(path){
         let api = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${path}&tsyms=USD`);
         return await api.json();
     } catch (error) {
-        console.log(error)
         return error;
     }
     
@@ -276,8 +283,8 @@ async function graph_build(){
     arr = Object.keys(res);  //in case not all coins came back with data
     if (arr.length==0) return app.innerHTML = error_s('<h1>Network failure. Please try again.</h1>'); //fetch fail
     arr = arr[0]=="Response" ? [] : arr; //error response
-    report_list_id_name.length > arr.length && //display coins that didnt return with data
-    alert (`ATTENTION! No data for: \n ${(report_list_id_name.filter(x => arr.indexOf(x[1].toUpperCase())===-1)).join('\n')}`);
+    report_list_id_name.length > arr.length && //display coins that didnt return with data. for example - asdhalf
+    alert (`ATTENTION! No data for: \n - ${(report_list_id_name.filter(x => arr.indexOf(x[1].toUpperCase())===-1)).join(`\n - `)}`);
     res = Object.entries(res);
     let count = 0;
     let x = new Date();
@@ -296,7 +303,7 @@ async function graph_build(){
 
 function reports(my_data,arr){
     if (report_list_id_name.length == 0) { //no coins chosen
-        app.innerHTML=   `<div class='error'> No currnecy chosen. Please choose at least one currency to view.
+        app.innerHTML=   `<div class='error'> No currency chosen. Please choose at least one currency to view.
                            <br/><button class="btn btn-secondary" type="button" onclick="navTo(this)" data-target='home'>Return to HOME</button> </div>`;
         return;
     }
@@ -307,16 +314,16 @@ function reports(my_data,arr){
     }
     let my_url_filtered = arr.join(); //in case not all coins have data in graph api
     let graph_data = [];
-    console.log(my_data);
     Object.entries(my_data).forEach(e => 
         {let tname = (e[0])
         let timing = (e[1])
             graph_data.push({
                 type:"line",
+                lineThickness: 3,
                 axisYType: "secondary",
                 name: tname,
                 showInLegend: true,
-                markerSize: 0,
+                markerSize: 1,
                 yValueFormatString: "$#.###",
                 dataPoints: timing
             })        
@@ -341,7 +348,7 @@ function reports(my_data,arr){
                 cursor: "pointer",
                 verticalAlign: "top",
                 horizontalAlign: "center",
-                dockInsidePlotArea: true,
+                dockInsidePlotArea: false,
                 itemclick: toogleDataSeries
             },
             data: graph_data
@@ -464,15 +471,3 @@ class MyModal{
     }
 
 }
-
-function test(){
-    setTimeout(() => {
-        let elem = document.querySelectorAll('.form-check-input');
-        for (let i = 0; i < 6; i++) {
-            elem[i].click();
-            
-        }
-    }, 5000);
-    
-}
-test();

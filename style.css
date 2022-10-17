@@ -120,7 +120,7 @@ footer{
     display: none;
     }
  }
-  @media only screen and (max-width: 765px) {
+  @media only screen and (max-width: 777px) {
     .my_app {
     margin-top: 110px;
     }
